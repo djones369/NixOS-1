@@ -14,7 +14,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "StonyNix"; # Define your hostname.
+  networking.hostName = "NixBee"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -23,10 +23,6 @@
 
   # Enable networking
   networking.networkmanager.enable = true;
-
-  # Enable Blueteeth
-  hardware.bluetooth.enable = true;
-  hardware.bluetooth.powerOnBoot = true;
 
   # Set your time zone.
   time.timeZone = "America/New_York";
@@ -49,12 +45,9 @@
   # Enable the X11 windowing system.
   services.xserver.enable = true;
 
-  # Use the proprietary NVIDIA drivers
-  services.xserver.videoDrivers = [ "nvidia" ];
-
   # Optionally, enable the OpenGL library for hardware acceleration
-  hardware.opengl.enable = true;
-
+  # hardware.opengl.enable = true;
+  hardware.graphics.enable = true;
 
   # Enable the Budgie Desktop environment.
   services.xserver.displayManager.lightdm.enable = true;
@@ -62,16 +55,15 @@
   programs.dconf.enable = true;
 
   # Configure keymap in X11
-  services.xserver = {
+  services.xserver.xkb = {
     layout = "us";
-    xkbVariant = "";
+    variant = "";
   };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
   # Enable sound with pipewire.
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -132,6 +124,18 @@
   # Virt-manager
   virtualisation.libvirtd.enable = true;
   programs.virt-manager.enable = true;
+  
+  # Enable common container config files in /etc/containers
+  virtualisation.containers.enable = true;
+  virtualisation = {
+    podman = {
+      enable = true;
+      # Create a `docker` alias for podman, to use it as a drop-in replacement
+      dockerCompat = true;
+      # Required for containers under podman-compose to be able to talk to each other.
+      defaultNetwork.settings.dns_enabled = true;
+    };
+  };
 
   # List packages installed in system profile. To search, run:
   # $ nix search wget
@@ -139,19 +143,14 @@
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   #  wget
      htop
-     nixFlakes
      pkgs.tailscale
      btop
      htop
      pciutils
-     magic-wormhole
      yt-dlp
      pkgs.cifs-utils
      pkgs.samba
      nmap
-     mosh
-     fuse
-     fuse3
      appimage-run
      git
      jmtpfs
@@ -159,30 +158,10 @@
      unzip
      zip
      gnupg
-     pkgs.restic
-     pkgs.autorestic
-     pkgs.restique
      google-chrome
-     quickemu
-     quickgui
-     x32edit
-     junction
      distrobox
-     tor-browser
-     v4l-utils
-     v4l2-relayd
-     libv4l
-     sunshine
-     gtop
      ventoy
      kitty
-     cool-retro-term
-     avahi
-     mesa
-     libffi
-     libevdev
-     libcap
-     libdrm
      xorg.libXrandr
      xorg.libxcb
      ffmpeg-full
@@ -193,15 +172,10 @@
      xorg.libXfixes
      libva
      libvdpau
-     pkgs.moonlight-qt
-     pkgs.sunshine
-     firefox
      telegram-desktop
      mpv
      haruna
      trayscale
-     reaper
-     lame
      xdotool
      pwvucontrol
      easyeffects
@@ -214,35 +188,18 @@
      typora
      neovim
      vimPlugins.LazyVim
-     maestral-gui
-     pkgs.amdvlk
-     pkgs.driversi686Linux.amdvlk
-     element-desktop
      gh
      gitui
      cmake
      ispell
      gcc
      go
-     aspell
-     gnumake
-     glxinfo
-     libnotify
-     yt-dlp
-     dstat
-     file
-     iotop
-     lshw-gui
-     google-chrome
      geany
      vscode
      virt-manager
-     zoom-us
-     rustdesk-flutter
      fastfetch
      bitwarden-desktop
      dunst
-
 
   ];
 
@@ -250,14 +207,13 @@
   
   # Service to start
   
-
-  # Enable Auto Optimising the store CF 5-18-23
+  # Enable Auto Optimising the store
   nix.settings.auto-optimise-store = true;
 
   nix.gc = {
     automatic = true;
     dates = "weekly";
-    # options = "--delete-older-than 10d";
+    # options = "--delete-older-than 5d";
     options = "--keep-generations 5";
   };
 
@@ -272,7 +228,7 @@
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  # services.openssh.enable = true;
+  services.openssh.enable = true;
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
@@ -286,7 +242,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "24.05"; # Did you read the comment?
+  system.stateVersion = "24.11"; # Did you read the comment?
 
 }
-
