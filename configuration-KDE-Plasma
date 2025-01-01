@@ -14,7 +14,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "SilverNix"; # Define your hostname.
+  networking.hostName = "Nix-Leno"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -46,23 +46,23 @@
   };
 
   # Enable the X11 windowing system.
+  # You can disable this if you're only using the Wayland session.
   services.xserver.enable = true;
 
   # Enable the KDE Plasma Desktop Environment.
-  services.xserver.displayManager.sddm.enable = true;
-  services.xserver.desktopManager.plasma5.enable = true;
+  services.displayManager.sddm.enable = true;
+  services.desktopManager.plasma6.enable = true;
 
   # Configure keymap in X11
-  services.xserver = {
+  services.xserver.xkb = {
     layout = "us";
-    xkbVariant = "";
+    variant = "";
   };
 
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
   # Enable sound with pipewire.
-  sound.enable = true;
   hardware.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
@@ -81,22 +81,13 @@
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
 
-  # Enable Virt-manager
-  virtualisation.libvirtd.enable = true;
-  programs.virt-manager.enable = true;
-
-  # Enable Flatpak
-  services.flatpak.enable = true;
-
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.dave = {
     isNormalUser = true;
     description = "Dave J";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "adbusers" "libvirtd" "video" "render" "audio" ];
     packages = with pkgs; [
-      firefox
-      kate
-      partition-manager
+      kdePackages.kate
     #  thunderbird
     ];
   };
@@ -104,44 +95,122 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  #----=[ Fonts ]=----#
+  fonts.packages = with pkgs; [
+    noto-fonts
+    ubuntu_font_family
+    noto-fonts-emoji
+    liberation_ttf
+    fira-code
+    fira-code-symbols
+    mplus-outline-fonts.githubRelease
+    dina-font
+    fira
+  ];
+
+  # Lets get Fish Shell - CF 6-1-22
+  programs.fish.enable = true;
+
+  # Flatpak bitches - CF 6-1-22
+  services.flatpak.enable = true;
+  xdg.portal.enable = true;
+
+  # Install firefox.
+  programs.firefox.enable = true;
+
+  # Enable Nix experimental features and Flakes 4-17-24
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # Virt-manager
+  virtualisation.libvirtd.enable = true;
+  programs.virt-manager.enable = true;
+  
+  # Enable common container config files in /etc/containers
+  virtualisation.containers.enable = true;
+  virtualisation = {
+    podman = {
+      enable = true;
+      # Create a `docker` alias for podman, to use it as a drop-in replacement
+      dockerCompat = true;
+      # Required for containers under podman-compose to be able to talk to each other.
+      defaultNetwork.settings.dns_enabled = true;
+    };
+  };
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
   #  wget
-    neofetch
-    yaru-theme
-    google-chrome
-    discord
-    gimp-with-plugins
-    vscode
-    libsForQt5.kdenlive
-    shotcut
-    krita
-    audacity
-    gnome.cheese
-    obs-studio
-    vlc
-    blender
-    filezilla
-    mumble
-    remmina
-    transmission
-    wireshark
-    zoom-us
-    libsForQt5.ghostwriter
-    bitwarden
-    clamtk
-    runelite
-    onlyoffice-bin
-    pika-backup
-    joplin-desktop
-    rpi-imager
-    ferdium    
-    ipscan
-    tailscale
-    git
+     htop
+     pkgs.tailscale
+     btop
+     htop
+     pciutils
+     yt-dlp
+     pkgs.cifs-utils
+     pkgs.samba
+     nmap
+     appimage-run
+     git
+     jmtpfs
+     gnumake
+     unzip
+     zip
+     gnupg
+     google-chrome
+     distrobox
+     ventoy
+     kitty
+     xorg.libXrandr
+     xorg.libxcb
+     ffmpeg-full
+     libevdev
+     libpulseaudio
+     xorg.libX11
+     pkgs.xorg.libxcb
+     xorg.libXfixes
+     libva
+     libvdpau
+     telegram-desktop
+     mpv
+     haruna
+     trayscale
+     xdotool
+     pwvucontrol
+     easyeffects
+     pipecontrol
+     wireplumber
+     pavucontrol
+     ncpamixer
+     carla
+     vlc
+     typora
+     neovim
+     vimPlugins.LazyVim
+     gh
+     gitui
+     cmake
+     ispell
+     gcc
+     go
+     geany
+     vscode
+     virt-manager
+     fastfetch
+     bitwarden-desktop
   ];
+
+  # Enable Auto Optimising the store
+  nix.settings.auto-optimise-store = true;
+
+  nix.gc = {
+    automatic = true;
+    dates = "weekly";
+    # options = "--delete-older-than 5d";
+    options = "--keep-generations 5";
+  };
+
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -168,6 +237,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "23.11"; # Did you read the comment?
+  system.stateVersion = "24.11"; # Did you read the comment?
 
 }
