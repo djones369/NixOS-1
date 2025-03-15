@@ -14,7 +14,7 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "Master-Nix"; # Define your hostname.
+  networking.hostName = "NixBee"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -168,7 +168,6 @@
   filezilla         # Graphical FTP, FTPS and SFTP client
   htop              # System monitor
   rpi-imager        # Raspberry Pi Imaging Utility
-  starship	    # customizable prompt for any shell
   ventoy            # USB boot tool
 
 
@@ -182,6 +181,7 @@
 
 
   # Internet
+  brave		    # Privacy-oriented browser
   discord           # All-in-one cross-platform voice and text chat for gamers
   distrobox         # Containerized environment manager
   google-chrome     # Web browser
@@ -192,11 +192,12 @@
   yt-dlp            # YouTube (and more) downloader
   transmission_4    # Fast, easy and free BitTorrent client
   wireshark         # Powerful network protocol analyzer
-  # pcloud            # Cloud Storage (Not Working)
+  vivaldi	    # Browser for our Friends
+  # pcloud          # Cloud Storage (Not Working)
 
   # Office
+  joplin-desktop    # Open source note taking and to-do application
   libreoffice-fresh # Latest version of LibreOffice
-  # logseq	    # outliner notebook for organizing and sharing your personal knowledge base
   novelwriter       # Open source plain text editor designed for writing novels
   obsidian          # Powerful knowledge base that works on top of a local folder of plain text Markdown files
   scribus           # Desktop Publishing (DTP) and Layout program
@@ -212,8 +213,12 @@
   go                # Programming language
   godot_4           # Free and Open Source 2D and 3D game engine
   gnumake           # Build automation tool
+  gopls				# Official language server for the Go language
+  hexo-cli			# Command line interface for Hexo
+  hugo				# Fast and modern static website engine
   ispell            # Spell checker
   neovim            # Text editor
+  nodejs_23			# framework for the V8 JavaScript engine
   vimPlugins.LazyVim  # Enhanced Vim configuration
   vscode            # Code editor
 
@@ -247,10 +252,10 @@
   angryipscanner    # IP Scanner (That's ANGRY!)
   appimage-run      # Run AppImage applications
   bitwarden-desktop # Password manager
-  
   clamav            # Antivirus engine designed for detecting Trojans, viruses, malware and other malicious threats
   clamtk            # lightweight front-end for ClamAV (Clam Antivirus)
   gnome-boxes       # Simple GNOME 3 application to access remote or virtual systems
+  gnome-disk-utility	# Udisks graphical front-end
   gnupg             # Encryption and signing tool
   jmtpfs            # Mount MTP devices
   kitty             # Terminal emulator (GPU-accelerated)
@@ -282,9 +287,9 @@
 
   nix.gc = {
     automatic = true;
-    dates = "weekly";
-    # options = "--delete-older-than 5d";
-    options = "--keep-generations 5";
+    dates = "daily";
+    options = "--delete-older-than 5d";
+    # options = "--keep-generations 5";
   };
 
   # Some programs need SUID wrappers, can be configured further or are
