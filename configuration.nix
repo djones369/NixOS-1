@@ -14,8 +14,12 @@
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "NixBee"; # Define your hostname.
+  networking.hostName = "Master-Nix"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+  networking.extraHosts =
+    ''
+      staging.wflib.org 100.100.146.88
+    '';
 
   # Configure network proxy if necessary
   # networking.proxy.default = "http://user:password@proxy:port/";
@@ -129,7 +133,7 @@
   virtualisation.libvirtd.enable = true;
   programs.virt-manager.enable = true;
   virtualisation.spiceUSBRedirection.enable = true;
-  
+
   # Enable common container config files in /etc/containers
   virtualisation.containers.enable = true;
   virtualisation = {
@@ -141,7 +145,7 @@
       defaultNetwork.settings.dns_enabled = true;
     };
   };
-  
+
   # Rustdesk Background Service
   systemd.user.services.rustdesk = {
   description = "RustDesk Remote Desktop Service";
@@ -168,6 +172,7 @@
   filezilla         # Graphical FTP, FTPS and SFTP client
   htop              # System monitor
   rpi-imager        # Raspberry Pi Imaging Utility
+  starship	    # customizable prompt for any shell
   ventoy            # USB boot tool
 
 
@@ -181,23 +186,27 @@
 
 
   # Internet
-  brave		    # Privacy-oriented browser
+  brave		    # Privacy-oriented browser for Desktop and Laptop computers
+  cockpit			# Web-based graphical interface for servers
   discord           # All-in-one cross-platform voice and text chat for gamers
   distrobox         # Containerized environment manager
+  docker-compose	# define and run multi-container applications with Docker
   google-chrome     # Web browser
   nmap              # Network scanner
+  podman			# Program for managing pods, containers and container images
+  podman-compose	# Implementation of docker-compose with podman backend
+  podman-desktop	# A graphical tool for developing on containers and Kubernetes
   tailscale         # VPN tool for secure network access
   runelite          # Open source Old School RuneScape client
   wget              # Command-line file downloader
   yt-dlp            # YouTube (and more) downloader
   transmission_4    # Fast, easy and free BitTorrent client
   wireshark         # Powerful network protocol analyzer
-  vivaldi	    # Browser for our Friends
-  # pcloud          # Cloud Storage (Not Working)
+  # pcloud            # Cloud Storage (Not Working)
 
   # Office
-  joplin-desktop    # Open source note taking and to-do application
   libreoffice-fresh # Latest version of LibreOffice
+  # logseq	    # outliner notebook for organizing and sharing your personal knowledge base
   novelwriter       # Open source plain text editor designed for writing novels
   obsidian          # Powerful knowledge base that works on top of a local folder of plain text Markdown files
   scribus           # Desktop Publishing (DTP) and Layout program
@@ -213,12 +222,11 @@
   go                # Programming language
   godot_4           # Free and Open Source 2D and 3D game engine
   gnumake           # Build automation tool
-  gopls				# Official language server for the Go language
-  hexo-cli			# Command line interface for Hexo
-  hugo				# Fast and modern static website engine
+  hexo-cli	    # Command line interface for Hexo
+  hugo		    # Fast and modern static website engine
   ispell            # Spell checker
   neovim            # Text editor
-  nodejs_23			# framework for the V8 JavaScript engine
+  nodejs_23	    # framework for the V8 JavaScript engine
   vimPlugins.LazyVim  # Enhanced Vim configuration
   vscode            # Code editor
 
@@ -255,7 +263,7 @@
   clamav            # Antivirus engine designed for detecting Trojans, viruses, malware and other malicious threats
   clamtk            # lightweight front-end for ClamAV (Clam Antivirus)
   gnome-boxes       # Simple GNOME 3 application to access remote or virtual systems
-  gnome-disk-utility	# Udisks graphical front-end
+  gnome-disk-utility # Udisks graphical front-end
   gnupg             # Encryption and signing tool
   jmtpfs            # Mount MTP devices
   kitty             # Terminal emulator (GPU-accelerated)
@@ -270,7 +278,7 @@
   unzip             # Archive extraction tool
   zip               # Archive compression tool
   hplipWithPlugin   # HP Printer Drivers
-  warp-terminal     # Fast terminal with AI 
+  warp-terminal     # Fast terminal with AI
 
   # Rustdesk
   rustdesk-flutter
@@ -279,18 +287,19 @@
   ];
 
   # Unstable Apps
-  
+
   # Service to start
-  
+
   # Enable Auto Optimising the store
   nix.settings.auto-optimise-store = true;
 
   nix.gc = {
     automatic = true;
     dates = "daily";
-    options = "--delete-older-than 5d";
     # options = "--keep-generations 5";
+    options = "--delete-older-than 5";  # Keep the latest 5 generations
   };
+
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
