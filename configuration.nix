@@ -146,6 +146,19 @@
     };
   };
 
+
+  # Enable Cockpit
+  services.cockpit = {
+    enable = true;
+    port = 9090;
+    # openFirewall = true; # Please see the comments section
+    settings = {
+      WebService = {
+        AllowUnencrypted = true;
+      };
+    };
+  };
+
   # Rustdesk Background Service
   systemd.user.services.rustdesk = {
   description = "RustDesk Remote Desktop Service";
@@ -187,15 +200,15 @@
 
   # Internet
   brave		    # Privacy-oriented browser for Desktop and Laptop computers
-  cockpit			# Web-based graphical interface for servers
+  cockpit	    # Web-based graphical interface for servers
   discord           # All-in-one cross-platform voice and text chat for gamers
   distrobox         # Containerized environment manager
-  docker-compose	# define and run multi-container applications with Docker
+  docker-compose    # define and run multi-container applications with Docker
   google-chrome     # Web browser
   nmap              # Network scanner
-  podman			# Program for managing pods, containers and container images
-  podman-compose	# Implementation of docker-compose with podman backend
-  podman-desktop	# A graphical tool for developing on containers and Kubernetes
+  podman            # Program for managing pods, containers and container images
+  podman-compose    # Implementation of docker-compose with podman backend
+  podman-desktop    # A graphical tool for developing on containers and Kubernetes
   tailscale         # VPN tool for secure network access
   runelite          # Open source Old School RuneScape client
   wget              # Command-line file downloader
