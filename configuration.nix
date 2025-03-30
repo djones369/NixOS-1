@@ -240,6 +240,7 @@
   ispell            # Spell checker
   neovim            # Text editor
   nodejs_23	    # framework for the V8 JavaScript engine
+  trivy             # Simple and comprehensive vulnerability scanner for containers
   vimPlugins.LazyVim  # Enhanced Vim configuration
   vscode            # Code editor
 
