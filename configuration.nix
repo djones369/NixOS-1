@@ -194,7 +194,7 @@
   xorg.libxcb       # Alternative variant of libxcb
   xorg.libXfixes    # X11 library for miscellaneous fixes
   xorg.libXrandr    # X11 library for screen resizing/rotation
-  gimp-with-plugins # GNU Image Manipulation Program
+  # gimp-with-plugins # GNU Image Manipulation Program
   inkscape-with-extensions # Vector graphics editor
 
 
@@ -240,7 +240,6 @@
   ispell            # Spell checker
   neovim            # Text editor
   nodejs_23	    # framework for the V8 JavaScript engine
-  trivy             # Simple and comprehensive vulnerability scanner for containers
   vimPlugins.LazyVim  # Enhanced Vim configuration
   vscode            # Code editor
 
@@ -281,6 +280,7 @@
   gnupg             # Encryption and signing tool
   jmtpfs            # Mount MTP devices
   kitty             # Terminal emulator (GPU-accelerated)
+  menulibre         # menu editor with an easy-to-use interface
   pciutils          # Hardware info utility
   pika-backup       # Simple backups based on borg
   pkgs.samba        # SMB server/client tools
@@ -288,6 +288,7 @@
   syncthing         # Open Source Continuous File Synchronization
   syncthing-tray    # Simple application tray for syncthing
   virt-manager      # Virtualization manager
+  virtio-win	    # Windows VirtIO Drivers
   xdotool           # X11 automation utility
   unzip             # Archive extraction tool
   zip               # Archive compression tool
