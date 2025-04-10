@@ -8,6 +8,7 @@
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      ./vm.nix
     ];
 
   # Bootloader.
@@ -130,9 +131,9 @@
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
   # Virt-manager
-  virtualisation.libvirtd.enable = true;
-  programs.virt-manager.enable = true;
-  virtualisation.spiceUSBRedirection.enable = true;
+  # virtualisation.libvirtd.enable = true;
+  # programs.virt-manager.enable = true;
+  # virtualisation.spiceUSBRedirection.enable = true;
 
   # Enable common container config files in /etc/containers
   virtualisation.containers.enable = true;
@@ -287,14 +288,26 @@
   remmina           # Remote desktop client written in GTK
   syncthing         # Open Source Continuous File Synchronization
   syncthing-tray    # Simple application tray for syncthing
-  virt-manager      # Virtualization manager
-  virtio-win	    # Windows VirtIO Drivers
   xdotool           # X11 automation utility
   unzip             # Archive extraction tool
   zip               # Archive compression tool
   hplipWithPlugin   # HP Printer Drivers
   warp-terminal     # Fast terminal with AI
 
+
+  # Virt-Manager
+  spice			# Complete open source solution for interaction with virtualized desktop devices
+  spice-gtk 		# GTK 3 SPICE widget
+  spice-protocol	# Protocol headers for the SPICE protocol
+  virt-manager		# Virtualization manager
+  virt-viewer		# Viewer for remote virtual machines
+  virtio-win	    	# Windows VirtIO Drivers
+  win-spice		# Windows SPICE Drivers
+  swtpm
+  OVMF
+  qemu			# Generic and open source machine emulator and virtualizer
+  qemu_kvm		# Generic and open source machine emulator and virtualizer
+  
   # Rustdesk
   rustdesk-flutter
   rustdesk-server
