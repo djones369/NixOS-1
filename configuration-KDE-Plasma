@@ -11,10 +11,11 @@
     ];
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  boot.loader.grub.enable = true;
+  boot.loader.grub.device = "/dev/vda";
+  boot.loader.grub.useOSProber = true;
 
-  networking.hostName = "Nix-Leno"; # Define your hostname.
+  networking.hostName = "nixeee"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -53,6 +54,7 @@
   services.displayManager.sddm.enable = true;
   services.desktopManager.plasma6.enable = true;
 
+
   # Configure keymap in X11
   services.xserver.xkb = {
     layout = "us";
@@ -63,7 +65,7 @@
   services.printing.enable = true;
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -88,35 +90,36 @@
     extraGroups = [ "networkmanager" "wheel" "adbusers" "libvirtd" "video" "render" "audio" ];
     packages = with pkgs; [
       kdePackages.kate
+      rustdesk-flutter
+      rustdesk-server
     #  thunderbird
     ];
   };
 
+  # Install firefox.
+  programs.firefox.enable = true;
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-  #----=[ Fonts ]=----#
-  fonts.packages = with pkgs; [
-    noto-fonts
-    ubuntu_font_family
-    noto-fonts-emoji
-    liberation_ttf
-    fira-code
-    fira-code-symbols
-    mplus-outline-fonts.githubRelease
-    dina-font
-    fira
-  ];
+### RustDesk Server Info for NixOS
 
-  # Lets get Fish Shell - CF 6-1-22
-  programs.fish.enable = true;
+  # Rustdesk Background Service
+  systemd.user.services.rustdesk = {
+  description = "RustDesk Remote Desktop Service";
+  after = [ "network.target" ];
+  serviceConfig = {
+    # ExecStart = "/run/current-system/sw/bin/rustdesk --service";
+    ExecStart = "rustdesk --service";
+    Restart = "always";
+    RestartSec = 5;
+  };
+  wantedBy = [ "default.target" ];
+};
 
-  # Flatpak bitches - CF 6-1-22
+  # Flatpak
   services.flatpak.enable = true;
   xdg.portal.enable = true;
-
-  # Install firefox.
-  programs.firefox.enable = true;
 
   # Enable Nix experimental features and Flakes 4-17-24
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
@@ -124,7 +127,7 @@
   # Virt-manager
   virtualisation.libvirtd.enable = true;
   programs.virt-manager.enable = true;
-  
+
   # Enable common container config files in /etc/containers
   virtualisation.containers.enable = true;
   virtualisation = {
@@ -137,6 +140,8 @@
     };
   };
 
+
+
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
@@ -144,8 +149,6 @@
   #  wget
      htop
      pkgs.tailscale
-     btop
-     htop
      pciutils
      yt-dlp
      pkgs.cifs-utils
@@ -160,7 +163,6 @@
      gnupg
      google-chrome
      distrobox
-     ventoy
      kitty
      xorg.libXrandr
      xorg.libxcb
@@ -185,7 +187,6 @@
      ncpamixer
      carla
      vlc
-     typora
      neovim
      vimPlugins.LazyVim
      gh
@@ -237,6 +238,6 @@
   # this value at the release version of the first install of this system.
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
-  system.stateVersion = "24.11"; # Did you read the comment?
+  system.stateVersion = "25.05"; # Did you read the comment?
 
 }
