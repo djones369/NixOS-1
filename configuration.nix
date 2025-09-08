@@ -10,7 +10,10 @@
       ./hardware-configuration.nix
     ];
 
-  # Bootloader.
+#--- Updated Kernel ---#
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+#--- Bootloader ---#
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
@@ -81,9 +84,11 @@
   users.users.dave = {
     isNormalUser = true;
     description = "Dave Jones";
-    extraGroups = [ "networkmanager" "wheel" ];
+    extraGroups = [ "networkmanager" "wheel" "adbusers" "libvirtd" "video" "render" "audio" ];
     packages = with pkgs; [
-    #  thunderbird
+    thunderbird
+    rustdesk-flutter
+    rustdesk-server
     ];
   };
 
@@ -99,6 +104,11 @@
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
+  #--- Tailscale Services ---#
+  services.tailscale.enable = true;
+  services.tailscale.package = pkgs.tailscale.overrideAttrs (_: { doCheck = false; });
+  networking.nftables.enable = true;
+  
 ### RustDesk Server Info for NixOS
 
   # Rustdesk Background Service
@@ -114,10 +124,31 @@
   wantedBy = [ "default.target" ];
 };
 
-  # Flatpak
+virtualisation.spiceUSBRedirection.enable = true;
+
+  # --- Enable Flatpak  ---
   services.flatpak.enable = true;
   xdg.portal.enable = true;
 
+  # --- Flatpak auto-update ---
+  systemd.services."flatpak-update" = {
+    description = "Update Flatpak applications";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.flatpak}/bin/flatpak update -y";
+    };
+  };
+
+  systemd.timers."flatpak-update" = {
+    description = "Run Flatpak update daily";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+    };
+  };
+  # --- End Flatpak auto-update ---
+  
   # Enable Nix experimental features and Flakes 4-17-24
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
@@ -142,9 +173,11 @@
   # $ nix search wget
   environment.systemPackages = with pkgs; [
   #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
+     gnome-software
      wget
      htop
      pkgs.tailscale
+     (pkgs.tailscale.overrideAttrs (_: { doCheck = false; }))
      pciutils
      yt-dlp
      pkgs.cifs-utils
@@ -152,6 +185,7 @@
      nmap
      appimage-run
      git
+     github-desktop
      gnumake
      unzip
      zip
@@ -193,19 +227,19 @@
      vscode
      virt-manager
      fastfetch
+     ghostty    
      bitwarden-desktop
      nerd-fonts.symbols-only
      boxbuddy
-     ghostty
      mate.mate-terminal
      fastfetch
      starship
-
      hexo-cli
      hugo
      jekyll
      ghost-cli
-
+     marp-cli
+     mumble
 
 # --- (Doom) Emacs --- #
      emacs
@@ -227,27 +261,25 @@
      # Extras
      imagemagick sqlite aspell
 
-
-
   ];
 
+# --- Weekly Garbage CLeaner --- #
 
+  # If you use systemd-boot:
+  boot.loader.systemd-boot.configurationLimit = 5;
 
-
-
-
-
-
-  # Enable Auto Optimising the store
-  nix.settings.auto-optimise-store = true;
-
+  # Automatic garbage collection (adjust schedule/retention as you like)
   nix.gc = {
     automatic = true;
-    dates = "weekly";
-    # options = "--delete-older-than 5d";
-    options = "--keep-generations 5";
+    dates = "weekly";                 # or "monthly", "daily", "Sat 03:00", etc.
+    options = "--delete-older-than 14d";
   };
 
+# ---  Keep the /nix/store tidy automatically --- #
+  nix.settings.auto-optimise-store = true;
+
+  
+  
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
   # programs.mtr.enable = true;
