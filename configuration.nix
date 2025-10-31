@@ -4,17 +4,35 @@
 
 { config, pkgs, ... }:
 
+let 
+  # home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/release-25.05.tar.gz";
+  home-manager = builtins.fetchTarball "https://github.com/nix-community/home-manager/archive/master.tar.gz";
+
+in 
+
 {
   imports =
     [ # Include the results of the hardware scan.
       ./hardware-configuration.nix
+      (import "${home-manager}/nixos")
+      # For wayland support see the following config
+      # ./qtile.nix
     ];
+
+   home-manager.useUserPackages = true;
+   home-manager.useGlobalPkgs = true;
+   home-manager.backupFileExtension = "backup";
+   home-manager.users.dave = import ./home.nix;
+
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "RocketNix"; # Define your hostname.
+  #--- Updated Kernel ---#
+  boot.kernelPackages = pkgs.linuxPackages_latest;
+
+  networking.hostName = "Nix-Caddy"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Configure network proxy if necessary
@@ -49,14 +67,55 @@
   services.xserver.displayManager.lightdm.enable = true;
   services.xserver.desktopManager.budgie.enable = true;
 
-  # Configure keymap in X11
+  # Enable Cosmic Desktop environment 
+  # services.displayManager.sddm.enable = true;
+  # services.displayManager.sddm.wayland.enable = true;
+  # services.desktopManager.cosmic.enable = true;
+
+  # Enable the qtile window manager (optional; LightDM lets you pick it at login)
+  services.xserver.windowManager.qtile.enable = true;
+  services.xserver.windowManager.qtile.extraPackages = p: with p; [ qtile-extras ];
+
+  
+  # NEW: autostart a polkit agent in your session (needed for virt-manager auth)
+  services.xserver.displayManager.sessionCommands = ''
+    if command -v /run/current-system/sw/lib/polkit-gnome/polkit-gnome-authentication-agent-1 >/dev/null; then
+      /run/current-system/sw/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+    fi
+  '';
+
+    # Configure keymap in X11
   services.xserver.xkb = {
     layout = "us";
     variant = "";
   };
 
-  # Enable CUPS to print documents.
-  services.printing.enable = true;
+
+  # Enable CUPS to print documents & Avahi to allow other devices on the network to discover
+  services.avahi = {
+    enable = true;
+    nssmdns4 = true;
+    openFirewall = true;
+  };
+
+  services.printing = {
+    enable = true;
+    drivers = with pkgs; [
+      cups-filters
+      cups-browsed
+    ];
+  };
+
+  # Enable Epson & HP Scanning
+  services.udev.packages = [ pkgs.utsushi ];
+  
+  hardware.sane = {
+    enable = true;  # enables support for SANE scanners
+    extraBackends = [
+      pkgs.epkowa          # Epson ES-400 backend
+      pkgs.hplipWithPlugin # HP scanners (requires proprietary plugin)
+    ];
+  };
 
   # Enable sound with pipewire.
   services.pulseaudio.enable = false;
@@ -80,27 +139,33 @@
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.dave = {
     isNormalUser = true;
-    description = "Dave Jones";
-    extraGroups = [ "networkmanager" "wheel" ];
+    description = "Dave J";
+    extraGroups = [ "networkmanager" "wheel" "adbusers" "libvirtd" "video" "kvm" "render" "scanner" "lp" "audio" ];
     packages = with pkgs; [
-    #  thunderbird
+    thunderbird
+    rustdesk-flutter
+    rustdesk-server
     ];
   };
-
-  environment.variables.PATH = [
-    "${config.users.users.dave.home}/.emacs.d/bin"
-  ];
-
-
 
   # Install firefox.
   programs.firefox.enable = true;
 
+  # Local Wordpress & Drupal
+  #--- Wordpress---#  
+  services.wordpress.sites."localhost" = {};
+
+
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
-### RustDesk Server Info for NixOS
+  #--- Tailscale Services ---#
+  # services.tailscale.enable = true;
+  # services.tailscale.package = pkgs.tailscale.overrideAttrs (_: { doCheck = false; });
+  # networking.nftables.enable = true;
+  # services.tailscale.useRoutingFeatures = "server"; # or "client"
 
+### RustDesk Server Info for NixOS
   # Rustdesk Background Service
   systemd.user.services.rustdesk = {
   description = "RustDesk Remote Desktop Service";
@@ -114,16 +179,54 @@
   wantedBy = [ "default.target" ];
 };
 
-  # Flatpak
+
+
+  # --- Enable Flatpak  ---
   services.flatpak.enable = true;
   xdg.portal.enable = true;
 
-  # Enable Nix experimental features and Flakes 4-17-24
+  # --- Flatpak auto-update ---#
+  systemd.services."flatpak-update" = {
+    description = "Update Flatpak applications";
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.flatpak}/bin/flatpak update -y";
+    };
+  };
+
+  systemd.timers."flatpak-update" = {
+    description = "Run Flatpak update daily";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnCalendar = "daily";
+      Persistent = true;
+    };
+  };
+  # --- End Flatpak auto-update ---
+
+  # Enable Nix experimental features and Flakes
   nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
-  # Virt-manager
-  virtualisation.libvirtd.enable = true;
-  programs.virt-manager.enable = true;
+# --- Virt-manager and libvirt ---#
+virtualisation.libvirtd = {
+  enable = true;
+  qemu = {
+    package = pkgs.qemu_kvm;
+    # ovmf.enable = true; # Don't need in Unstable
+    swtpm.enable = true;
+  };
+};
+
+# Enables the setuid ACL helper needed for USB redirection
+virtualisation.spiceUSBRedirection.enable = true;
+
+# Polkit for virt-manager actions without root prompts
+security.polkit.enable = true;
+
+# Nice-to-have: ships desktop integration polkit rules for virt-manager
+programs.virt-manager.enable = true;
+
+
 
   # Enable common container config files in /etc/containers
   virtualisation.containers.enable = true;
@@ -141,112 +244,25 @@
   # List packages installed in system profile. To search, run:
   # $ nix search wget
   environment.systemPackages = with pkgs; [
-  #  vim # Do not forget to add an editor to edit configuration.nix! The Nano editor is also installed by default.
-     wget
-     htop
-     pkgs.tailscale
-     pciutils
-     yt-dlp
-     pkgs.cifs-utils
-     pkgs.samba
-     nmap
-     appimage-run
-     git
-     gnumake
-     unzip
-     zip
-     gnupg
-     google-chrome
-     distrobox
-     kitty
-     xorg.libXrandr
-     xorg.libxcb
-     ffmpeg-full
-     libevdev
-     libpulseaudio
-     xorg.libX11
-     pkgs.xorg.libxcb
-     xorg.libXfixes
-     libva
-     libvdpau
-     telegram-desktop
-     mpv
-     trayscale
-     xdotool
-     pwvucontrol
-     easyeffects
-     pipecontrol
-     wireplumber
-     pavucontrol
-     ncpamixer
-     carla
-     vlc
-     neovim
-     vimPlugins.LazyVim
-     gh
-     gitui
-     cmake
-     ispell
-     gcc
-     go
-     geany
-     vscode
-     virt-manager
-     fastfetch
-     bitwarden-desktop
-     nerd-fonts.symbols-only
-     boxbuddy
-     ghostty
-     mate.mate-terminal
-     fastfetch
-     starship
-
-     hexo-cli
-     hugo
-     jekyll
-     ghost-cli
-
-
-# --- (Doom) Emacs --- #
-     emacs
-     ripgrep
-     # optional dependencies
-     coreutils # basic GNU utilities
-     fd
-     clang
-     emacsPackages.doom
-     emacsPackages.doom-themes
-     gnupg
-
-     # Markdown
-     pandoc
-     # Shell
-     shellcheck
-     # Org export
-     texlive.combined.scheme-small
-     # Extras
-     imagemagick sqlite aspell
-
-
 
   ];
 
+# --- Weekly Garbage CLeaner --- #
 
+  # If you use systemd-boot:
+  boot.loader.systemd-boot.configurationLimit = 5;
 
-
-
-
-
-
-  # Enable Auto Optimising the store
-  nix.settings.auto-optimise-store = true;
-
+  # Automatic garbage collection (adjust schedule/retention as you like)
   nix.gc = {
     automatic = true;
-    dates = "weekly";
-    # options = "--delete-older-than 5d";
-    options = "--keep-generations 5";
+    dates = "weekly";                 # or "monthly", "daily", "Sat 03:00", etc.
+    options = "--delete-older-than 10d";
   };
+
+# ---  Keep the /nix/store tidy automatically --- #
+  nix.settings.auto-optimise-store = true;
+
+
 
   # Some programs need SUID wrappers, can be configured further or are
   # started in user sessions.
@@ -266,6 +282,8 @@
   # networking.firewall.allowedUDPPorts = [ ... ];
   # Or disable the firewall altogether.
   # networking.firewall.enable = false;
+  services.gvfs.enable = true;
+  
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
@@ -276,3 +294,4 @@
   system.stateVersion = "25.05"; # Did you read the comment?
 
 }
+
